@@ -1,49 +1,52 @@
-'use client';
+"use client";
 
-import { useState, useCallback } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { claimsApi, CreateClaimDto } from '@/services/api';
-import { useRouter } from 'next/navigation';
-import { useDropzone } from 'react-dropzone';
+import { useState, useCallback } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { claimsApi, CreateClaimDto } from "@/services/api";
+import { useRouter } from "next/navigation";
+import { useDropzone, FileRejection } from "react-dropzone";
 
 export default function Form() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState<CreateClaimDto>({
-    claim_type: '',
-    agent_name: '',
+    claim_type: "",
+    agent_name: "",
     files: [],
   });
   const [error, setError] = useState<string | null>(null);
 
-  const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: any[]) => {
-    setError(null);
-    
-    // Handle rejected files
-    if (rejectedFiles.length > 0) {
-      const reasons = rejectedFiles.map(file => {
-        if (file.errors[0].code === 'file-too-large') {
-          return `${file.file.name} is too large (max 10MB)`;
-        }
-        if (file.errors[0].code === 'file-invalid-type') {
-          return `${file.file.name} has invalid type (allowed: PDF, PNG, JPG, JPEG, GIF)`;
-        }
-        return `${file.file.name} was rejected`;
-      });
-      setError(`Some files were rejected: ${reasons.join(', ')}`);
-    }
+  const onDrop = useCallback(
+    (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
+      setError(null);
 
-    setFormData(prev => ({
-      ...prev,
-      files: [...(prev.files || []), ...acceptedFiles]
-    }));
-  }, []);
+      // Handle rejected files
+      if (rejectedFiles.length > 0) {
+        const reasons = rejectedFiles.map((file) => {
+          if (file.errors[0].code === "file-too-large") {
+            return `${file.file.name} is too large (max 10MB)`;
+          }
+          if (file.errors[0].code === "file-invalid-type") {
+            return `${file.file.name} has invalid type (allowed: PDF, PNG, JPG, JPEG, GIF)`;
+          }
+          return `${file.file.name} was rejected`;
+        });
+        setError(`Some files were rejected: ${reasons.join(", ")}`);
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        files: [...(prev.files || []), ...acceptedFiles],
+      }));
+    },
+    []
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'application/pdf': ['.pdf'],
-      'image/*': ['.png', '.jpg', '.jpeg', '.gif']
+      "application/pdf": [".pdf"],
+      "image/*": [".png", ".jpg", ".jpeg", ".gif"],
     },
     maxSize: 10 * 1024 * 1024, // 10MB
   });
@@ -51,12 +54,12 @@ export default function Form() {
   const createClaimMutation = useMutation({
     mutationFn: claimsApi.createClaim,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['claims'] });
-      router.push('/claims');
+      queryClient.invalidateQueries({ queryKey: ["claims"] });
+      router.push("/claims");
     },
     onError: (error: Error) => {
       setError(error.message);
-    }
+    },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -64,18 +67,22 @@ export default function Form() {
     createClaimMutation.mutate(formData);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: name === 'amount' ? parseFloat(value) || 0 : value
+      [name]: name === "amount" ? parseFloat(value) || 0 : value,
     }));
   };
 
   const removeFile = (index: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      files: prev.files?.filter((_, i) => i !== index)
+      files: prev.files?.filter((_, i) => i !== index),
     }));
   };
 
@@ -84,7 +91,10 @@ export default function Form() {
       <h1 className="text-3xl font-bold mb-6">Insurance Claim Form</h1>
       <form onSubmit={handleSubmit} className="max-w-md mx-auto">
         <div className="mb-4">
-          <label htmlFor="agent_name" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="agent_name"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Agent Name
           </label>
           <input
@@ -99,7 +109,10 @@ export default function Form() {
         </div>
 
         <div className="mb-4">
-          <label htmlFor="claim_type" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="claim_type"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Claim Type
           </label>
           <select
@@ -124,7 +137,9 @@ export default function Form() {
           <div
             {...getRootProps()}
             className={`border-2 border-dashed rounded-md p-6 text-center cursor-pointer transition-colors ${
-              isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
+              isDragActive
+                ? "border-blue-500 bg-blue-50"
+                : "border-gray-300 hover:border-gray-400"
             }`}
           >
             <input {...getInputProps()} />
@@ -134,7 +149,9 @@ export default function Form() {
               <p className="text-gray-600">
                 Drag & drop files here, or click to select files
                 <br />
-                <span className="text-sm text-gray-500">(PDF, PNG, JPG, JPEG, GIF up to 10MB)</span>
+                <span className="text-sm text-gray-500">
+                  (PDF, PNG, JPG, JPEG, GIF up to 10MB)
+                </span>
               </p>
             )}
           </div>
@@ -142,12 +159,19 @@ export default function Form() {
 
         {formData.files && formData.files.length > 0 && (
           <div className="mb-4">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Selected Files:</h3>
+            <h3 className="text-sm font-medium text-gray-700 mb-2">
+              Selected Files:
+            </h3>
             <ul className="space-y-2">
               {formData.files.map((file, index) => (
-                <li key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                <li
+                  key={index}
+                  className="flex items-center justify-between bg-gray-50 p-2 rounded"
+                >
                   <div className="flex-1">
-                    <span className="text-sm text-gray-600 truncate">{file.name}</span>
+                    <span className="text-sm text-gray-600 truncate">
+                      {file.name}
+                    </span>
                     <span className="text-xs text-gray-500 block">
                       {(file.size / 1024 / 1024).toFixed(2)} MB
                     </span>
@@ -166,7 +190,10 @@ export default function Form() {
         )}
 
         {error && (
-          <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <div
+            className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+            role="alert"
+          >
             <strong className="font-bold">Error!</strong>
             <span className="block sm:inline"> {error}</span>
           </div>
@@ -176,12 +203,12 @@ export default function Form() {
           type="submit"
           disabled={createClaimMutation.isPending}
           className={`w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors duration-200 ${
-            createClaimMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''
+            createClaimMutation.isPending ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >
-          {createClaimMutation.isPending ? 'Submitting...' : 'Submit Claim'}
+          {createClaimMutation.isPending ? "Submitting..." : "Submit Claim"}
         </button>
       </form>
     </div>
   );
-} 
+}

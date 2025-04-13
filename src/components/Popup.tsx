@@ -56,7 +56,7 @@ export default function Popup({ claim, setIsOpen, setActiveClaim }: Props) {
         {data &&
           data.map((entry) => {
             return (
-              <>
+              <div key={entry.claimID}>
                 <h3 className="text-lg font-bold mb-4">
                   Agent: {claim?.agent_name}
                 </h3>
@@ -66,7 +66,7 @@ export default function Popup({ claim, setIsOpen, setActiveClaim }: Props) {
                     <div>Claimed Amount: ${entry?.claimed_amount}</div>
                   )}
                   {entry?.approved_amount && (
-                    <div>Claimed Amount: ${entry?.approved_amount}</div>
+                    <div>Approved Amount: ${entry?.approved_amount}</div>
                   )}
                   {entry?.decision && (
                     <>
@@ -86,7 +86,7 @@ export default function Popup({ claim, setIsOpen, setActiveClaim }: Props) {
                 >
                   ✕
                 </button>
-              </>
+              </div>
             );
           })}
       </div>
