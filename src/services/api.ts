@@ -20,6 +20,7 @@ export interface Claim {
   claim_type?: string;
   policy_holder_name?: string;
   status?: string;
+  claim_status?: string;
   decision?: string;
 }
 
@@ -107,7 +108,9 @@ export const claimsApi = {
           "Content-Type": "multipart/form-data",
         },
       });
-      return response.data.data;
+      const claims = response.data.data;
+      // Sort claims by claimID in ascending order
+      return claims.sort((a: Claim, b: Claim) => (b.claimID || 0) - (a.claimID || 0));
     } catch (error) {
       console.error("Error getting claims:", error);
       throw error;
