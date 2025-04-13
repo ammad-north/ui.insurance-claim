@@ -52,7 +52,7 @@ export default function Popup({ claim, setIsOpen, setActiveClaim }: Props) {
       className="fixed inset-0 flex items-center justify-center z-50"
       style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
     >
-      <div className="bg-white p-4 rounded shadow-lg w-96 relative">
+      <div className="bg-white p-4 rounded shadow-lg w-150 relative">
         {data &&
           data.map((entry) => {
             return (
